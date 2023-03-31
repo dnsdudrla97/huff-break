@@ -1,0 +1,19 @@
+#define macro MAIN() = takes(0) returns(0) {
+    // dynamic offset 0x20-0x00
+    0x20    
+    0x00    
+    mstore  
+
+    // store string length 0x0d-0x20
+    0x0d
+    0x20
+    mstore
+
+    __RIGHTPAD(0x48656c6c6f2c20776f726c6421)
+    0x40
+    mstore
+
+    0x60
+    0x00
+    return    
+}

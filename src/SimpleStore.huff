@@ -1,40 +1,79 @@
-/* Interface */
+// 32 bytes memory store 
+// first word => offset
+// second word => length
+// third word => data, byte, right padding
+// memory schema, length, byte => 
+
+// 0x000000000000000000000000000000000000000d48656c6c6f2c20776f726c6421
+
+// FREE_STORAGE_POINTER  <abstract>
+// #define constant STORAGE_SLOT0 = FREE_STORAGE_POINTER()
+// #define constant STORAGE_SLOT1 = FREE_STORAGE_POINTER()
+// #define constant STORAGE_SLOT2 = FREE_STORAGE_POINTER()
+
+// storage slot => contract state maintained by EVM in slots => Compile time 
+// Compile time => STORAGE_SLOT0 = 0, STORAGE_SLOT1 = 1, STORAGE_SLOT2 = 2
+
+#define constant VALUE = FREE_STORAGE_POINTER()
+
+// // [VALUE], [ ] <- references to slotes <- slots = 5
+// #define macro SET_5() = takes(0), returns(0) {
+//     0x05    // PUSH1 0x05
+//     [VALUE] // SSTORE
+//     sstore
+// }
+
+// // Reading from storage, sstore => sload 
+// #define macro SET_5_READ_5() = takes(0) returns(0) {
+//     0x5
+//     [VALUE]
+//     sstore
+
+//     [VALUE]     // SLOAD sltos:5
+//     sload
+// }
+
+
+// simple Storage Implementatins
 #define function setValue(uint256) nonpayable returns ()
-#define function getValue() view returns (uint256)
+#define function getValue() nonpayable returns (uint256)
 
-/* Storage Slots */
-#define constant VALUE_LOCATION = FREE_STORAGE_POINTER()
+#define macro SET_VALUE() = takes(0) returns(0) {
+    0x04
+    calldataload
 
-/* Methods */
-#define macro SET_VALUE() = takes (0) returns (0) {
-    0x04 calldataload   // [value]
-    [VALUE_LOCATION]    // [ptr, value]
-    sstore              // []
+    // get pointer, store
+    [VALUE]
+    sstore
 }
 
-#define macro GET_VALUE() = takes (0) returns (0) {
-    // Load value from storage.
-    [VALUE_LOCATION]   // [ptr]
-    sload                // [value]
+#define macro GET_VALUE() = takes(0) returns(0) {
+    // read value storage 32byte
+    [VALUE]
+    sload
 
-    // Store value in memory.
-    0x00 mstore
-
-    // Return value
-    0x20 0x00 return
+    // store => return value (memory)
+    0x00
+    mstore
+    
+    // return 32bytes memory 
+    0x20
+    0x00
+    return
 }
 
-#define macro MAIN() = takes (0) returns (0) {
-    // Identify which function is being called.
-    0x00 calldataload 0xE0 shr
-    dup1 __FUNC_SIG(setValue) eq set jumpi
-    dup1 __FUNC_SIG(getValue) eq get jumpi
+#define macro MAIN() = takes(0) returns(0) {
+    // functions selector
+    0x00 calldataload 0xe0 shr
 
-    0x00 0x00 revert
+    dup1 __FUNC_SIG(setValue) eq setValue jumpi
+    dup1 __FUNC_SIG(getValue) eq getValue jumpi
 
-    set:
+    // dispatch
+    setValue:
         SET_VALUE()
-    get:
+    getValue:
         GET_VALUE()
-
+        
+    0x00 0x00 revert
 }

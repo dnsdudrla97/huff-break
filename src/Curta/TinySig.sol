@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.17;
 
+import "forge-std/console.sol";
 import {IPuzzle} from "../interfaces/IPuzzle.sol";
 
 /// @title TinySig
@@ -27,7 +28,10 @@ contract TinySig is IPuzzle {
     /// @inheritdoc IPuzzle
     function verify(uint256 _start, uint256 _solution) external returns (bool) {
         address target = address(new Deployer(abi.encodePacked(_solution)));
-        (, bytes memory ret) = target.staticcall("");
+        
+
+        (bool successd, bytes memory ret) = target.staticcall("");
+        require(successd, "failed to call target");
         (bytes32 h, uint8 v, bytes32 r) = abi.decode(ret, (bytes32, uint8, bytes32));
         return (
             r < bytes32(uint256(1 << 184)) &&
@@ -39,3 +43,4 @@ contract TinySig is IPuzzle {
 contract Deployer {
     constructor(bytes memory code) { assembly { return (add(code, 0x20), mload(code)) } }
 }
+

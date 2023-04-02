@@ -1,0 +1,8 @@
+
+#define macro MAIN() = takes(0) returns(0) {
+    0x681afa780d17da29203322b473d3f210a7d621259a4e6ce9e403f5a266ff719a mstore
+    0x1b mstore8
+    0xa0b8d44a08139b2aa19c9df8440fec12c701d5bedfd82c7e761c60c2813c8d4e mstore
+    0x40 mload
+    0x61 0x20 return
+} 
